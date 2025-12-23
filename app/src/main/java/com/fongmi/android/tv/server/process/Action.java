@@ -137,6 +137,8 @@ public class Action implements Process {
         if (VodConfig.get().getConfig().equals(config)) {
             if (force) History.delete(config.getId());
             History.sync(targets);
+            // 发送同步成功事件
+            App.post(() -> ServerEvent.syncSuccess());
         } else {
             VodConfig.load(config, getCallback(targets));
         }
@@ -149,6 +151,8 @@ public class Action implements Process {
                 RefreshEvent.config();
                 RefreshEvent.video();
                 History.sync(targets);
+                // 发送同步成功事件
+                ServerEvent.syncSuccess();
             }
 
             @Override

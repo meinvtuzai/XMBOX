@@ -21,6 +21,7 @@ import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.databinding.ActivitySettingBinding;
 import com.fongmi.android.tv.db.AppDatabase;
 import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigCallback;
 import com.fongmi.android.tv.impl.DohCallback;
@@ -36,17 +37,19 @@ import com.fongmi.android.tv.ui.dialog.LiveDialog;
 import com.fongmi.android.tv.ui.dialog.ProxyDialog;
 import com.fongmi.android.tv.ui.dialog.RestoreDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
-import com.fongmi.android.tv.ui.dialog.WebDAVDialog;
+import com.fongmi.android.tv.ui.dialog.SyncSettingsDialog;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UrlUtil;
-import com.fongmi.android.tv.utils.WebDAVSyncManager;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
 import com.github.catvod.utils.Path;
 import com.permissionx.guolindev.PermissionX;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,30 +108,7 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.liveTabVisibleText.setText(getSwitch(Setting.isLiveTabVisible()));
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[Setting.getSize()]);
         mBinding.qualityText.setText((quality = ResUtil.getStringArray(R.array.select_quality))[Setting.getQuality()]);
-        setWebDAVStatus();
         setLiveSettingsVisibility();
-    }
-
-    private void setWebDAVStatus() {
-        WebDAVSyncManager manager = WebDAVSyncManager.get();
-        if (manager.isConfigured()) {
-            // 显示账号昵称（用户名）
-            String username = Setting.getWebDAVUsername();
-            if (!TextUtils.isEmpty(username)) {
-                // 如果用户名是邮箱，只显示@前面的部分
-                String displayName = username;
-                if (username.contains("@")) {
-                    displayName = username.substring(0, username.indexOf("@"));
-                }
-                String status = Setting.isWebDAVAutoSync() ? displayName + "（自动同步）" : displayName;
-                mBinding.webdavStatusText.setText(status);
-            } else {
-                String status = Setting.isWebDAVAutoSync() ? "已配置（自动同步）" : "已配置";
-                mBinding.webdavStatusText.setText(status);
-            }
-        } else {
-            mBinding.webdavStatusText.setText("未配置");
-        }
     }
 
     private void setLiveSettingsVisibility() {
@@ -173,7 +153,6 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.quality.setOnClickListener(this::setQuality);
         mBinding.size.setOnClickListener(this::setSize);
         mBinding.doh.setOnClickListener(this::setDoh);
-        mBinding.webdav.setOnClickListener(this::onWebDAV);
     }
 
     @Override
@@ -342,11 +321,10 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     }
 
     private void setLiveTabVisible(View view) {
-        Setting.putLiveTabVisible(!Setting.isLiveTabVisible());
-        mBinding.liveTabVisibleText.setText(getSwitch(Setting.isLiveTabVisible()));
-        // 发送刷新事件，通知主界面更新导航栏
+        boolean isChecked = !Setting.isLiveTabVisible();
+        Setting.putLiveTabVisible(isChecked);
+        mBinding.liveTabVisibleText.setText(getSwitch(isChecked));
         RefreshEvent.config();
-        // 更新直播设置项的可见性
         setLiveSettingsVisibility();
     }
 
@@ -432,10 +410,6 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         }));
     }
 
-    private void onWebDAV(View view) {
-        WebDAVDialog.create(this).show();
-    }
-
     private void initConfig() {
         WallConfig.get().init();
         LiveConfig.get().init().load();
@@ -446,17 +420,21 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     public void onRefreshEvent(RefreshEvent event) {
         super.onRefreshEvent(event);
         if (event.getType() == RefreshEvent.Type.CONFIG) {
-            setWebDAVStatus();
+            // Config refresh handling
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerEvent(com.fongmi.android.tv.event.ServerEvent event) {
+        if (event.getType() == com.fongmi.android.tv.event.ServerEvent.Type.SYNC_SUCCESS) {
+            // 扫码同步成功，关闭设置页面返回首页
+            finish();
         }
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            // 当Activity重新获得焦点时，更新WebDAV状态（例如从对话框返回后）
-            setWebDAVStatus();
-        }
     }
 
     @Override

@@ -482,6 +482,12 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     }
 
     private void loadHistory() {
+        // 检查是否显示历史记录
+        if (!Setting.isHistoryVisible()) {
+            mBinding.historySection.setVisibility(View.GONE);
+            return;
+        }
+        
         List<History> histories = History.get();
         
         if (histories == null || histories.isEmpty()) {
@@ -490,10 +496,6 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
             mBinding.historySection.setVisibility(View.VISIBLE);
             mHistoryAdapter.setItems(histories);
         }
-    }
-
-    private void refreshHistory() {
-        loadHistory();
     }
 
     private void showProgress() {
@@ -558,7 +560,7 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
                 homeContent();
                 break;
             case HISTORY:
-                refreshHistory();
+                loadHistory();
                 break;
         }
     }
@@ -619,7 +621,7 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     @Override
     public void onResume() {
         super.onResume();
-        refreshHistory();
+        loadHistory();
     }
 
     @Override

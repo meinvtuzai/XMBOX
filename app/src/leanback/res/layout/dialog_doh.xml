@@ -5,7 +5,7 @@
     android:id="@+id/recycler"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black_90"
+    android:background="@drawable/shape_widget"
     android:padding="16dp"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     app:maxHeight="296dp"

@@ -24,6 +24,10 @@ public class ServerEvent {
         EventBus.getDefault().post(new ServerEvent(Type.SETTING, text, name));
     }
 
+    public static void syncSuccess() {
+        EventBus.getDefault().post(new ServerEvent(Type.SYNC_SUCCESS, ""));
+    }
+
     private ServerEvent(Type type, String text) {
         this(type, text, "");
     }
@@ -47,6 +51,6 @@ public class ServerEvent {
     }
 
     public enum Type {
-        SEARCH, PUSH, SETTING
+        SEARCH, PUSH, SETTING, SYNC_SUCCESS
     }
 }

@@ -165,15 +165,6 @@
     <string name="update_check">Checking for updates…</string>
     <string name="update_confirm">Update</string>
 
-    <!-- Crash -->
-    <string name="crash_info">An unexpected error occurred.\nSorry for the inconvenience.</string>
-    <string name="crash_restart">Restart app</string>
-    <string name="crash_details">Error details</string>
-    <string name="crash_details_title">Error details</string>
-    <string name="crash_details_close">Close</string>
-    <string name="crash_log">Error log:</string>
-    <string name="crash_copy">Copy log</string>
-
     <!-- Hint -->
     <string name="copied">Copied</string>
     <string name="copied_to_clipboard">Error log copied to clipboard</string>
@@ -250,5 +241,17 @@
     <string name="source_hint_setting">Add Source</string>
     <string name="source_hint_live">Add Live Source</string>
     <string name="source_hint_wall">Add Wallpaper Source</string>
+
+    <!-- Crash Activity -->
+    <string name="crash_info">应用遇到了一个错误\n我们对此深感抱歉</string>
+    <string name="crash_restart">重启应用</string>
+    <string name="crash_details">查看详情</string>
+    <string name="crash_details_title">错误详情</string>
+    <string name="crash_details_close">关闭</string>
+    <string name="crash_log">错误日志：</string>
+    <string name="crash_copy">复制日志</string>
+
+    <!-- History Visible -->
+    <string name="setting_history_visible">显示首页历史</string>
 
 </resources>

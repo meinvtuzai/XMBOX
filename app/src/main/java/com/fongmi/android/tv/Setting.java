@@ -333,96 +333,38 @@ public class Setting {
         Prefers.put("live_tab_visible", visible);
     }
 
-    // WebDAV 同步配置
-    public static String getWebDAVUrl() {
-        return Prefers.getString("webdav_url");
+    // 局域网自动同步配置
+    public static boolean isAutoSync() {
+        return Prefers.getBoolean("auto_sync", false);
     }
 
-    public static void putWebDAVUrl(String url) {
-        Prefers.put("webdav_url", url);
+    public static void putAutoSync(boolean autoSync) {
+        Prefers.put("auto_sync", autoSync);
     }
 
-    public static String getWebDAVUsername() {
-        return Prefers.getString("webdav_username");
+    public static int getSyncInterval() {
+        return Prefers.getInt("sync_interval", 30); // 默认30分钟
     }
 
-    public static void putWebDAVUsername(String username) {
-        Prefers.put("webdav_username", username);
+    public static void putSyncInterval(int minutes) {
+        Prefers.put("sync_interval", minutes);
     }
 
-    public static String getWebDAVPassword() {
-        return Prefers.getString("webdav_password");
+    // TV版同步服务器开关
+    public static boolean isSyncEnabled() {
+        return Prefers.getBoolean("sync_enabled", false);
     }
 
-    public static void putWebDAVPassword(String password) {
-        Prefers.put("webdav_password", password);
+    public static void putSyncEnabled(boolean enabled) {
+        Prefers.put("sync_enabled", enabled);
     }
 
-    public static boolean isWebDAVAutoSync() {
-        return Prefers.getBoolean("webdav_auto_sync", false);
+    // 首页历史记录可见性
+    public static boolean isHistoryVisible() {
+        return Prefers.getBoolean("history_visible", true); // 默认显示
     }
 
-    public static void putWebDAVAutoSync(boolean autoSync) {
-        Prefers.put("webdav_auto_sync", autoSync);
-    }
-
-    public static int getWebDAVSyncInterval() {
-        return Prefers.getInt("webdav_sync_interval", 30); // 默认30分钟
-    }
-
-    public static void putWebDAVSyncInterval(int minutes) {
-        Prefers.put("webdav_sync_interval", minutes);
-    }
-
-    // WebDAV 同步模式：ACCOUNT（账号模式）或 CODE（同步码模式）
-    public static String getWebDAVSyncMode() {
-        return Prefers.getString("webdav_sync_mode", "ACCOUNT");
-    }
-
-    public static void putWebDAVSyncMode(String mode) {
-        Prefers.put("webdav_sync_mode", mode);
-    }
-
-    // 同步码（用于同步码模式）
-    public static String getWebDAVSyncCode() {
-        return Prefers.getString("webdav_sync_code");
-    }
-
-    public static void putWebDAVSyncCode(String code) {
-        Prefers.put("webdav_sync_code", code);
-    }
-
-    // 公开存储URL（用于同步码模式，如GitHub Gist URL）
-    public static String getWebDAVPublicUrl() {
-        return Prefers.getString("webdav_public_url");
-    }
-
-    public static void putWebDAVPublicUrl(String url) {
-        Prefers.put("webdav_public_url", url);
-    }
-
-    // GitHub Gist相关（用于同步码模式）
-    public static String getWebDAVGistId() {
-        return Prefers.getString("webdav_gist_id");
-    }
-
-    public static void putWebDAVGistId(String gistId) {
-        Prefers.put("webdav_gist_id", gistId);
-    }
-
-    public static String getWebDAVGistRawUrl() {
-        return Prefers.getString("webdav_gist_raw_url");
-    }
-
-    public static void putWebDAVGistRawUrl(String url) {
-        Prefers.put("webdav_gist_raw_url", url);
-    }
-
-    public static String getWebDAVGistToken() {
-        return Prefers.getString("webdav_gist_token");
-    }
-
-    public static void putWebDAVGistToken(String token) {
-        Prefers.put("webdav_gist_token", token);
+    public static void putHistoryVisible(boolean visible) {
+        Prefers.put("history_visible", visible);
     }
 }

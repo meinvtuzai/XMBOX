@@ -18,16 +18,50 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="24dp"
-                android:text="XMBOX"
-                android:textColor="@color/white"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="XMBOX"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <!-- 观看同步按钮 -->
+                <LinearLayout
+                    android:id="@+id/syncSettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_sync_button"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_action_sync"
+                        android:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="观看同步"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
 
             <com.fongmi.android.tv.ui.custom.MarqueeLayout
                 android:id="@+id/marquee"
@@ -252,43 +286,6 @@
 
                 </LinearLayout>
                 
-                <!-- WebDAV同步配置 -->
-                <LinearLayout
-                    android:id="@+id/webdav"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="12dp">
-                    
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="16dp"
-                        android:src="@drawable/ic_fab_link"
-                        android:tint="@color/white" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:text="WebDAV"
-                        android:textColor="@color/white"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/webdavStatusText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:text="未配置"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:alpha="0.7" />
-
-                </LinearLayout>
-                
                 <!-- 无痕模式 -->
                 <LinearLayout
                     android:id="@+id/incognito"
@@ -348,6 +345,38 @@
 
                     <com.fongmi.android.tv.ui.custom.CustomSwitch
                         android:id="@+id/liveTabVisibleSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+                
+                <!-- 隐藏首页历史 -->
+                <LinearLayout
+                    android:id="@+id/historyVisible"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp">
+                    
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/ic_setting_history"
+                        android:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/setting_history_visible"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <com.fongmi.android.tv.ui.custom.CustomSwitch
+                        android:id="@+id/historyVisibleSwitch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
 

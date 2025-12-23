@@ -17,7 +17,7 @@ import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.ui.activity.CrashActivity;
 import com.fongmi.android.tv.utils.CacheCleaner;
 import com.fongmi.android.tv.utils.UpdateInstaller;
-import com.fongmi.android.tv.utils.WebDAVSyncManager;
+import com.fongmi.android.tv.utils.AutoSyncManager;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.hook.Hook;
 import com.github.catvod.Init;
@@ -58,7 +58,7 @@ public class App extends Application {
                 .disableHtmlEscaping()
                 .create();
         cleanTask = this::checkCacheClean;
-        syncTask = this::checkWebDAVSync;
+        syncTask = this::doAutoSync;
         appJustLaunched = true;
     }
 
@@ -163,8 +163,8 @@ public class App extends Application {
                 checkCacheClean();
                 // 检查是否有待安装的更新文件（用户从设置页面返回后）
                 checkPendingInstall();
-                // 检查WebDAV自动同步
-                checkWebDAVSync();
+                // 检查局域网自动同步
+                checkAutoSync();
                 // 自动检查更新（如果启用）
                 checkAutoUpdate(activity);
             }
@@ -222,44 +222,6 @@ public class App extends Application {
     }
     
     /**
-     * 检查并执行WebDAV自动同步
-     */
-    private void checkWebDAVSync() {
-        WebDAVSyncManager manager = WebDAVSyncManager.get();
-        if (manager.isConfigured()) {
-            // 应用启动时，如果已配置WebDAV，立即执行一次同步（下载远程数据）
-            // 这样新设备配置后，下次启动应用时就能看到其他设备的历史记录
-            Logger.d("App: WebDAV已配置，准备执行同步");
-            manager.syncHistory(true); // 使用统一的同步方法，包含防重复逻辑
-            
-            // 如果启用了自动同步，设置定期同步
-            if (Setting.isWebDAVAutoSync()) {
-                int interval = Setting.getWebDAVSyncInterval();
-                // 延迟执行下次同步，避免影响启动速度
-                post(syncTask, interval * 60 * 1000L);
-            }
-        } else {
-            Logger.d("App: WebDAV未配置，跳过同步");
-        }
-    }
-    
-    /**
-     * 执行WebDAV同步
-     */
-    private void doWebDAVSync() {
-        App.execute(() -> {
-            WebDAVSyncManager manager = WebDAVSyncManager.get();
-            if (manager.isConfigured()) {
-                Logger.d("App: 开始WebDAV自动同步");
-                manager.syncAll();
-                // 设置下次同步
-                int interval = Setting.getWebDAVSyncInterval();
-                post(syncTask, interval * 60 * 1000L);
-            }
-        });
-    }
-    
-    /**
      * 自动检查更新（如果启用）
      */
     private void checkAutoUpdate(Activity activity) {
@@ -280,6 +242,44 @@ public class App extends Application {
                 Updater.create().auto().release().start(activity);
             }
         }, 2000); // 延迟2秒
+    }
+    
+    /**
+     * 检查并执行局域网自动同步
+     */
+    private void checkAutoSync() {
+        AutoSyncManager manager = AutoSyncManager.get();
+        
+        if (!manager.isAutoSyncEnabled()) {
+            Logger.d("App: 局域网自动同步未启用");
+            return;
+        }
+        
+        // 应用启动时立即执行一次同步
+        Logger.d("App: 局域网自动同步已启用，准备执行同步");
+        execute(() -> manager.performAutoSync());
+        
+        // 设置定期同步
+        int interval = manager.getSyncInterval();
+        Logger.d("App: 设置定期同步，间隔: " + interval + " 分钟");
+        post(syncTask, interval * 60 * 1000L);
+    }
+    
+    /**
+     * 执行定期自动同步
+     */
+    private void doAutoSync() {
+        execute(() -> {
+            AutoSyncManager manager = AutoSyncManager.get();
+            if (manager.isAutoSyncEnabled()) {
+                Logger.d("App: 开始定期自动同步");
+                manager.performAutoSync();
+                
+                // 设置下次同步
+                int interval = manager.getSyncInterval();
+                post(syncTask, interval * 60 * 1000L);
+            }
+        });
     }
     
 

@@ -48,11 +48,10 @@ import com.fongmi.android.tv.ui.dialog.LiveDialog;
 import com.fongmi.android.tv.ui.dialog.ProxyDialog;
 import com.fongmi.android.tv.ui.dialog.RestoreDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
-import com.fongmi.android.tv.ui.dialog.WebDAVDialog;
+import com.fongmi.android.tv.ui.dialog.SyncSettingsDialog;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
-import com.fongmi.android.tv.utils.WebDAVSyncManager;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UrlUtil;
 import com.github.catvod.bean.Doh;
@@ -124,31 +123,9 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.proxyText.setText(getProxy(Setting.getProxy()));
         mBinding.incognitoSwitch.setChecked(Setting.isIncognito());
         mBinding.liveTabVisibleSwitch.setChecked(Setting.isLiveTabVisible());
+        mBinding.historyVisibleSwitch.setChecked(Setting.isHistoryVisible());
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[Setting.getSize()]);
-        setWebDAVStatus();
         setLiveSettingsVisibility();
-    }
-    
-    private void setWebDAVStatus() {
-        WebDAVSyncManager manager = WebDAVSyncManager.get();
-        if (manager.isConfigured()) {
-            // 显示账号昵称（用户名）
-            String username = Setting.getWebDAVUsername();
-            if (!TextUtils.isEmpty(username)) {
-                // 如果用户名是邮箱，只显示@前面的部分
-                String displayName = username;
-                if (username.contains("@")) {
-                    displayName = username.substring(0, username.indexOf("@"));
-                }
-                String status = Setting.isWebDAVAutoSync() ? displayName + "（自动同步）" : displayName;
-                mBinding.webdavStatusText.setText(status);
-            } else {
-                String status = Setting.isWebDAVAutoSync() ? "已配置（自动同步）" : "已配置";
-                mBinding.webdavStatusText.setText(status);
-            }
-        } else {
-            mBinding.webdavStatusText.setText("未配置");
-        }
     }
 
     private void setLiveSettingsVisibility() {
@@ -183,6 +160,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.syncSettings.setOnClickListener(this::onSyncSettings);
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.live.setOnClickListener(this::onLive);
         // mBinding.wall.setOnClickListener(this::onWall); // 壁纸功能已移除
@@ -205,9 +183,9 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         // mBinding.wallRefresh.setOnClickListener(this::setWallRefresh); // 壁纸功能已移除
         mBinding.incognitoSwitch.setOnClickListener(this::setIncognito);
         mBinding.liveTabVisibleSwitch.setOnClickListener(this::setLiveTabVisible);
+        mBinding.historyVisibleSwitch.setOnClickListener(this::setHistoryVisible);
         mBinding.size.setOnClickListener(this::setSize);
         mBinding.doh.setOnClickListener(this::setDoh);
-        mBinding.webdav.setOnClickListener(this::onWebDAV);
     }
 
     @Override
@@ -357,6 +335,10 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         LiveConfig.get().setHome(item);
     }
 
+    private void onSyncSettings(View view) {
+        SyncSettingsDialog.create().show(getActivity());
+    }
+
     private void onVod(View view) {
         ConfigDialog.create(this).type(type = 0).show();
     }
@@ -448,6 +430,14 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         // 不需要再次调用 setChecked，因为点击已经触发了状态变化
     }
 
+    private void setHistoryVisible(View view) {
+        boolean isChecked = !Setting.isHistoryVisible();
+        Setting.putHistoryVisible(isChecked);
+        // 发送刷新事件，通知首页更新历史记录显示
+        RefreshEvent.history();
+        // 不需要再次调用 setChecked，因为点击已经触发了状态变化
+    }
+
     private void setSize(View view) {
         new MaterialAlertDialogBuilder(getActivity()).setTitle(R.string.setting_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(size, Setting.getSize(), (dialog, which) -> {
             mBinding.sizeText.setText(size[which]);
@@ -528,10 +518,6 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         }));
     }
 
-    private void onWebDAV(View view) {
-        WebDAVDialog.create(this).show();
-    }
-
     private void initConfig() {
         WallConfig.get().init();
         LiveConfig.get().init().load();
@@ -553,7 +539,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
         if (event.getType() == RefreshEvent.Type.CONFIG) {
-            setWebDAVStatus();
+            // Config refresh handling
         }
     }
 
@@ -564,7 +550,6 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         setSourceHintText(mBinding.liveUrl, LiveConfig.getDesc(), R.string.source_hint_live);
         // setSourceHintText(mBinding.wallUrl, WallConfig.getDesc(), R.string.source_hint_wall); // 壁纸功能已移除
         setCacheText();
-        setWebDAVStatus(); // 更新WebDAV状态
     }
 
     @Override

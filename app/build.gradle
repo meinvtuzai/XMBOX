@@ -27,8 +27,8 @@ android {
         minSdk 24
         //noinspection ExpiredTargetSdkVersion
         targetSdk 28
-        versionCode 311
-        versionName "3.1.1"
+        versionCode 312
+        versionName "3.1.2"
         // GitHub Token (可选，用于提高API请求限制)
         def githubToken = project.findProperty("GITHUB_TOKEN") ?: ""
         buildConfigField "String", "GITHUB_TOKEN", "\"${githubToken}\""

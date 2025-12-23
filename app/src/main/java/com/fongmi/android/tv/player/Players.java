@@ -651,7 +651,11 @@ public class Players implements Player.Listener, ParseCallback {
     @Override
     public void onPlayerError(@NonNull PlaybackException error) {
         Logger.t(TAG).e(error.errorCode + "," + url);
-        if (retried()) ErrorEvent.extract(tag, error.getErrorCodeName());
+        // 使用友好的错误提示
+        String friendlyMsg = new com.fongmi.android.tv.player.exo.ErrorMsgProvider().get(error);
+        Logger.t(TAG).e("Error: " + friendlyMsg);
+        
+        if (retried()) ErrorEvent.extract(tag, friendlyMsg);
         else switch (error.errorCode) {
             case PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW:
                 seekToDefaultPosition();
@@ -669,7 +673,7 @@ public class Players implements Player.Listener, ParseCallback {
                 setFormat(ExoUtil.getMimeType(error.errorCode));
                 break;
             default:
-                ErrorEvent.extract(tag, error.getErrorCodeName());
+                ErrorEvent.extract(tag, friendlyMsg);
                 break;
         }
     }

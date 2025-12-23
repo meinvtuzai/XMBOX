@@ -365,6 +365,10 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             case PUSH:
                 VideoActivity.push(this, event.getText());
                 break;
+            case SYNC_SUCCESS:
+                // 扫码同步成功，显示提示
+                Notify.show("扫码同步成功");
+                break;
         }
     }
 
