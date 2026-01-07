@@ -39,6 +39,7 @@ import com.fongmi.android.tv.impl.ProxyCallback;
 import com.fongmi.android.tv.impl.SiteCallback;
 import com.fongmi.android.tv.player.Source;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
+import com.fongmi.android.tv.ui.activity.ScanActivity;
 import com.fongmi.android.tv.ui.activity.SettingPlayerActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.AboutDialog;
@@ -336,7 +337,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     }
 
     private void onSyncSettings(View view) {
-        SyncSettingsDialog.create().show(getActivity());
+        // 直接启动扫码进行设备绑定
+        // 设置默认为双向同步模式
+        Setting.putSyncMode(0);
+        // 启动扫码Activity
+        ScanActivity.start(requireActivity());
     }
 
     private void onVod(View view) {

@@ -184,6 +184,14 @@ public class SyncSettingsDialog extends BaseDialog implements DeviceAdapter.OnCl
     public void onFind(List<Device> devices) {
         if (!devices.isEmpty()) {
             adapter.addAll(devices);
+            // 扫码后自动启用同步功能
+            if (!Setting.isAutoSync()) {
+                Setting.putAutoSync(true);
+            }
+            // 确保同步间隔为30分钟
+            if (Setting.getSyncInterval() != 30) {
+                Setting.putSyncInterval(30);
+            }
             // 扫码后自动触发第一个设备的同步
             if (devices.size() == 1) {
                 Device device = devices.get(0);

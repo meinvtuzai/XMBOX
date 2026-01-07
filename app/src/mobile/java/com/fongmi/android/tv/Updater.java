@@ -133,27 +133,44 @@ public class Updater implements Download.Callback {
             
             // 检查是否有GitHub Token
             String githubToken = BuildConfig.GITHUB_TOKEN;
-            String response;
-            if (githubToken != null && !githubToken.isEmpty()) {
-                // 使用token进行认证请求（5000次/小时）
-                java.util.Map<String, String> headers = new java.util.HashMap<>();
-                headers.put("Authorization", "Bearer " + githubToken);
-                headers.put("Accept", "application/vnd.github.v3+json");
-                Logger.d("Updater: Using GitHub Token for authenticated request");
-                response = OkHttp.string(releasesUrl, headers);
-            } else {
-                // 使用未认证请求（60次/小时）
-                Logger.d("Updater: Using unauthenticated request (60 requests/hour limit)");
-                response = OkHttp.string(releasesUrl);
+            String response = null;
+            int retryCount = 0;
+            int maxRetries = 2; // 最多重试2次
+            
+            while (response == null && retryCount <= maxRetries) {
+                try {
+                    if (githubToken != null && !githubToken.isEmpty()) {
+                        // 使用token进行认证请求（5000次/小时）
+                        java.util.Map<String, String> headers = new java.util.HashMap<>();
+                        headers.put("Authorization", "Bearer " + githubToken);
+                        headers.put("Accept", "application/vnd.github.v3+json");
+                        headers.put("User-Agent", "XMBOX-Android");
+                        Logger.d("Updater: Using GitHub Token for authenticated request (attempt " + (retryCount + 1) + ")");
+                        response = OkHttp.string(releasesUrl, headers);
+                    } else {
+                        // 使用未认证请求（60次/小时）
+                        Logger.d("Updater: Using unauthenticated request (attempt " + (retryCount + 1) + ")");
+                        java.util.Map<String, String> headers = new java.util.HashMap<>();
+                        headers.put("User-Agent", "XMBOX-Android");
+                        response = OkHttp.string(releasesUrl, headers);
+                    }
+                } catch (Exception e) {
+                    Logger.e("Updater: Request failed (attempt " + (retryCount + 1) + "): " + e.getMessage());
+                    retryCount++;
+                    if (retryCount <= maxRetries) {
+                        // 等待一段时间后重试
+                        Thread.sleep(1000 * retryCount); // 递增等待时间
+                    }
+                }
             }
             
             // 检查响应是否为空（可能是网络错误、VPN问题等）
             if (response == null || response.isEmpty()) {
-                Logger.e("Updater: 网络请求失败，响应为空。可能是网络连接问题或VPN配置问题");
+                Logger.e("Updater: 网络请求失败，响应为空。可能是网络连接问题或GitHub访问受限");
                 if (forceCheck) {
                     // 手动检查时，显示错误提示
                     App.post(() -> {
-                        Notify.show("检查更新失败：网络连接异常，请检查网络设置或VPN配置");
+                        Notify.show("检查更新失败：无法连接到GitHub，请检查网络或稍后重试");
                         showVersionInfo(activity, BuildConfig.VERSION_NAME, "");
                     });
                 } else {
@@ -162,20 +179,26 @@ public class Updater implements Download.Callback {
                 return;
             }
             
+            // 检查API限流
             if (response.contains("rate limit exceeded") || response.contains("API rate limit exceeded")) {
-                Logger.e("Updater: Rate limit exceeded");
+                Logger.e("Updater: GitHub API rate limit exceeded");
                 if (forceCheck) {
-                    // 手动检查时，显示版本信息弹窗（不显示错误提示）
-                    App.post(() -> showVersionInfo(activity, BuildConfig.VERSION_NAME, ""));
+                    App.post(() -> {
+                        Notify.show("检查更新失败：GitHub API请求次数已达上限，请稍后重试");
+                        showVersionInfo(activity, BuildConfig.VERSION_NAME, "");
+                    });
                 }
                 return;
             }
             
+            // 检查404错误
             if (response.contains("Not Found") || response.contains("404")) {
-                Logger.e("Updater: Release not found");
+                Logger.e("Updater: Release not found (404)");
                 if (forceCheck) {
-                    // 手动检查时，显示版本信息弹窗（不显示错误提示）
-                    App.post(() -> showVersionInfo(activity, BuildConfig.VERSION_NAME, ""));
+                    App.post(() -> {
+                        Notify.show("检查更新失败：未找到发布版本");
+                        showVersionInfo(activity, BuildConfig.VERSION_NAME, "");
+                    });
                 }
                 return;
             }
@@ -274,19 +297,26 @@ public class Updater implements Download.Callback {
                     Logger.d("Updater: 自动检查完成，当前已是最新版本");
                 }
             }
+        } catch (InterruptedException e) {
+            Logger.e("Updater: Thread interrupted: " + e.getMessage());
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             Logger.e("Updater: GitHub API check failed: " + e.getMessage());
             e.printStackTrace();
             if (forceCheck) {
                 // 手动检查时，显示错误提示
                 String errorMsg = e.getMessage();
-                if (errorMsg != null && (errorMsg.contains("network") || errorMsg.contains("timeout") || errorMsg.contains("connect"))) {
+                if (errorMsg != null && (errorMsg.contains("network") || errorMsg.contains("timeout") || 
+                    errorMsg.contains("connect") || errorMsg.contains("Unable to resolve host"))) {
                     App.post(() -> {
-                        Notify.show("检查更新失败：网络连接异常，请检查网络设置或VPN配置");
+                        Notify.show("检查更新失败：网络连接异常，请检查网络设置");
                         showVersionInfo(activity, BuildConfig.VERSION_NAME, "");
                     });
                 } else {
-                    App.post(() -> showVersionInfo(activity, BuildConfig.VERSION_NAME, ""));
+                    App.post(() -> {
+                        Notify.show("检查更新失败：" + (errorMsg != null ? errorMsg : "未知错误"));
+                        showVersionInfo(activity, BuildConfig.VERSION_NAME, "");
+                    });
                 }
             } else {
                 Logger.w("Updater: 自动检查失败: " + e.getMessage());

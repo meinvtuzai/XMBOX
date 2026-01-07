@@ -36,7 +36,7 @@
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
-                <!-- 观看同步按钮 -->
+                <!-- 扫码绑定按钮 -->
                 <LinearLayout
                     android:id="@+id/syncSettings"
                     android:layout_width="wrap_content"
@@ -49,13 +49,13 @@
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:layout_marginEnd="6dp"
-                        android:src="@drawable/ic_action_sync"
+                        android:src="@drawable/ic_action_scan"
                         android:tint="@color/white" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="观看同步"
+                        android:text="扫码绑定"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
 
